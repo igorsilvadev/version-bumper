@@ -126,7 +126,17 @@ git tag "$newBuildNumber$buildTriggerTag"
 git push --tag $version_tag --set-upstream origin release/${newBuildNumber}${buildTriggerTag}
 
 echo "creating PR!"
-    pr_id=$(curl https://api.bitbucket.org/2.0/repositories/m2y/$repository/pullrequests?fields=id   -u $bitbucketUser:$bitbucketPassword   --request POST   --header 'Content-Type: application/json'   --data '{    "title": "This PR was created by a script",    "description": "This PR was created by a script",    "destination": {      "branch": {        "name": "'"$destinationBranch"'"      }    },    "source": {      "branch": {        "name": "'"release/${newBuildNumber}${buildTriggerTag}"'"      }    }  }' | jq -r '.id')
+    default_reviewers=$(curl https://api.bitbucket.org/2.0/repositories/m2y/$repository/default-reviewers -u $bitbucketUser:$bitbucketPassword | jq -rc '.values' | jq '. | map({"uuid": .uuid})')
+    pr_id=$(curl https://api.bitbucket.org/2.0/repositories/m2y/$repository/pullrequests?fields=id -u $bitbucketUser:$bitbucketPassword   --request POST   --header 'Content-Type: application/json'   --data '{    "title": "'"chore($versionBumpIssue): (Version bump $newBuildNumber)"'",    "description": "'"
+ISSUE PARA LOGAR CODE-REVIEW \n
+
+https://mobile2you.atlassian.net/browse/$(codeReviewIssue) \n
+
+[$(versionBumpIssue)] \n
+
+O QUÊ? \n
+
+Gerando versão ${newBuildNumber}${buildTriggerTag} utilizando automação."'", "reviewers": '"$default_reviewers"', "destination": {      "branch": {        "name": "'"$destinationBranch"'"      }    },    "source": {      "branch": {        "name": "'"release/${newBuildNumber}${buildTriggerTag}"'"      }    }  }' | jq -r '.id')
 echo "$pr_id"
 
 
