@@ -126,7 +126,8 @@ git tag "$newBuildNumber$buildTriggerTag"
 git push --tag $version_tag --set-upstream origin release/${newBuildNumber}${buildTriggerTag}
 
 echo "creating PR!"
-    pr_id=$(curl https://api.bitbucket.org/2.0/repositories/m2y/$repository/pullrequests?fields=id   -u $bitbucketUser:$bitbucketPassword   --request POST   --header 'Content-Type: application/json'   --data '{    "title": "This PR was created by a script",    "description": "This PR was created by a script",    "destination": {      "branch": {        "name": "'"$destinationBranch"'"      }    },    "source": {      "branch": {        "name": "'"release/${newBuildNumber}${buildTriggerTag}"'"      }    }  }' | jq -r '.id')
+    default_reviewers=$(curl -s -u $bitbucketUser:$bitbucketPassword https://api.bitbucket.org/2.0/repositories/m2y/$repository/default-reviewers | jq -rc '.values' | jq '. | map({"uuid": .uuid})')
+    pr_id=$(curl https://api.bitbucket.org/2.0/repositories/m2y/$repository/pullrequests?fields=id   -u $bitbucketUser:$bitbucketPassword   --request POST   --header 'Content-Type: application/json'   --data '{    "title": "'release/${newBuildNumber}${buildTriggerTag}'",    "description": "ISSUE PARA LOGAR CODE-REVIEW https://mobile2you.atlassian.net/browse/ \n [] \n O QUÊ? Version bump", "reviewers": '"$default_reviewers"', "destination": {      "branch": {        "name": "'"$destinationBranch"'"      }    },    "source": {      "branch": {        "name": "'"release/${newBuildNumber}${buildTriggerTag}"'"      }    }  }' | jq -r '.id')
 echo "$pr_id"
 
 
